@@ -1,14 +1,19 @@
 #!/usr/bin/env node
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
 import { registerTools } from "./tools";
 
-const server = new McpServer({
-	name: "codeteleport",
-	version: "0.1.0",
-});
+async function main() {
+	const { McpServer } = await import("@modelcontextprotocol/sdk/server/mcp.js");
+	const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
 
-registerTools(server);
+	const server = new McpServer({
+		name: "codeteleport",
+		version: "0.1.1",
+	});
 
-const transport = new StdioServerTransport();
-server.connect(transport);
+	registerTools(server);
+
+	const transport = new StdioServerTransport();
+	await server.connect(transport);
+}
+
+main();

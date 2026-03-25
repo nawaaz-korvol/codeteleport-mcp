@@ -1,25 +1,23 @@
+import fs from "node:fs";
+import path from "node:path";
 import { CONFIG_DIR } from "../shared/constants";
 import type { Config } from "../shared/types";
 
-/**
- * Read config from ~/.codeteleport/config.json.
- * Throws if not logged in.
- */
-export function readConfig(_configDir: string = CONFIG_DIR): Config {
-	throw new Error("not implemented");
+export function readConfig(configDir: string = CONFIG_DIR): Config {
+	const configFile = path.join(configDir, "config.json");
+	if (!fs.existsSync(configFile)) {
+		throw new Error("Not logged in. Run `codeteleport auth login` first.");
+	}
+	return JSON.parse(fs.readFileSync(configFile, "utf-8"));
 }
 
-/**
- * Write config to ~/.codeteleport/config.json.
- * Creates the directory if needed. Sets chmod 600.
- */
-export function writeConfig(_config: Config, _configDir: string = CONFIG_DIR): void {
-	throw new Error("not implemented");
+export function writeConfig(config: Config, configDir: string = CONFIG_DIR): void {
+	fs.mkdirSync(configDir, { recursive: true });
+	const configFile = path.join(configDir, "config.json");
+	fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
+	fs.chmodSync(configFile, 0o600);
 }
 
-/**
- * Check if config file exists.
- */
-export function configExists(_configDir: string = CONFIG_DIR): boolean {
-	throw new Error("not implemented");
+export function configExists(configDir: string = CONFIG_DIR): boolean {
+	return fs.existsSync(path.join(configDir, "config.json"));
 }

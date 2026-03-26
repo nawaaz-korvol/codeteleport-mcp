@@ -54,6 +54,7 @@ Without `--target-dir`, CodeTeleport defaults to your home directory and assumes
 Add CodeTeleport as an MCP server so you can push/pull sessions directly from Claude Code:
 
 ```bash
+npm install -g @codeteleport/mcp
 claude mcp add codeteleport -- codeteleport-mcp
 ```
 

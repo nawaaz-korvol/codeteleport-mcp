@@ -292,6 +292,9 @@ describe("MCP Tools", () => {
 
 	describe("error handling", () => {
 		it("teleport_push returns isError on network failure", async () => {
+			// First call: deleteSession (overwrite attempt) — succeeds
+			mockFetch.mockResolvedValueOnce(mockResponse(200, { ok: true }));
+			// Second call: initiateUpload — fails
 			mockFetch.mockRejectedValueOnce(new Error("Network unreachable"));
 
 			const result = await callTool("teleport_push", {});

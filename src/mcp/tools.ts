@@ -10,6 +10,24 @@ import { scanLocalSessions } from "../core/local";
 import { detectCurrentSession } from "../core/session";
 import { unbundleSession } from "../core/unbundle";
 
+type ToolResult = { content: Array<{ type: "text"; text: string }>; isError?: boolean };
+
+function safeToolHandler(
+	handler: (args: Record<string, unknown>) => Promise<ToolResult>,
+): (args: Record<string, unknown>) => Promise<ToolResult> {
+	return async (args) => {
+		try {
+			return await handler(args);
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			return {
+				content: [{ type: "text" as const, text: message }],
+				isError: true,
+			};
+		}
+	};
+}
+
 export function registerTools(server: McpServer) {
 	server.registerTool(
 		"teleport_push",
@@ -30,7 +48,7 @@ export function registerTools(server: McpServer) {
 				tags: z.array(z.string()).optional().describe("Tags for filtering"),
 			}),
 		},
-		async (args) => {
+		safeToolHandler(async (args) => {
 			const config = readConfig();
 			const client = new CodeTeleportClient({ apiUrl: config.apiUrl, token: config.token });
 
@@ -52,8 +70,8 @@ export function registerTools(server: McpServer) {
 				sizeBytes: bundle.sizeBytes,
 				checksum: bundle.checksum,
 				metadata: bundle.metadata,
-				tags: args.tags,
-				label: args.label,
+				tags: args.tags as string[] | undefined,
+				label: args.label as string | undefined,
 			});
 
 			await client.uploadBundle(uploadUrl, bundle.bundlePath);
@@ -77,7 +95,7 @@ export function registerTools(server: McpServer) {
 					},
 				],
 			};
-		},
+		}),
 	);
 
 	server.registerTool(
@@ -104,17 +122,20 @@ export function registerTools(server: McpServer) {
 				limit: z.number().optional().describe("Max sessions to list"),
 			}),
 		},
-		async (args) => {
+		safeToolHandler(async (args) => {
 			const config = readConfig();
 			const client = new CodeTeleportClient({ apiUrl: config.apiUrl, token: config.token });
 
 			if (args.sessionId) {
-				const { downloadUrl } = await client.getDownloadUrl(args.sessionId);
+				const { downloadUrl } = await client.getDownloadUrl(args.sessionId as string);
 				const tmpFile = path.join(os.tmpdir(), `codeteleport-${args.sessionId}.tar.gz`);
 
 				try {
 					await client.downloadBundle(downloadUrl, tmpFile);
-					const result = await unbundleSession({ bundlePath: tmpFile, targetDir: args.targetDir });
+					const result = await unbundleSession({
+						bundlePath: tmpFile,
+						targetDir: args.targetDir as string | undefined,
+					});
 
 					return {
 						content: [
@@ -131,7 +152,10 @@ export function registerTools(server: McpServer) {
 				}
 			}
 
-			const { sessions } = await client.listSessions({ machine: args.machine, limit: args.limit || 10 });
+			const { sessions } = await client.listSessions({
+				machine: args.machine as string | undefined,
+				limit: (args.limit as number) || 10,
+			});
 
 			if (sessions.length === 0) {
 				return { content: [{ type: "text" as const, text: "No sessions found." }] };
@@ -148,7 +172,7 @@ export function registerTools(server: McpServer) {
 			lines.push("", "Use teleport_pull with sessionId to pull a specific session.");
 
 			return { content: [{ type: "text" as const, text: lines.join("\n") }] };
-		},
+		}),
 	);
 
 	server.registerTool(
@@ -170,14 +194,14 @@ export function registerTools(server: McpServer) {
 				limit: z.number().optional().describe("Max results"),
 			}),
 		},
-		async (args) => {
+		safeToolHandler(async (args) => {
 			const config = readConfig();
 			const client = new CodeTeleportClient({ apiUrl: config.apiUrl, token: config.token });
 
 			const { sessions, total } = await client.listSessions({
-				machine: args.machine,
-				tag: args.tag,
-				limit: args.limit || 20,
+				machine: args.machine as string | undefined,
+				tag: args.tag as string | undefined,
+				limit: (args.limit as number) || 20,
 			});
 
 			if (sessions.length === 0) {
@@ -196,7 +220,7 @@ export function registerTools(server: McpServer) {
 			}
 
 			return { content: [{ type: "text" as const, text: lines.join("\n") }] };
-		},
+		}),
 	);
 
 	server.registerTool(
@@ -211,7 +235,7 @@ export function registerTools(server: McpServer) {
 				'  "how many sessions do I have stored?"',
 			].join("\n"),
 		},
-		async () => {
+		safeToolHandler(async () => {
 			const config = readConfig();
 			const client = new CodeTeleportClient({ apiUrl: config.apiUrl, token: config.token });
 
@@ -231,7 +255,7 @@ export function registerTools(server: McpServer) {
 			}
 
 			return { content: [{ type: "text" as const, text: lines.join("\n") }] };
-		},
+		}),
 	);
 
 	server.registerTool(
@@ -249,7 +273,7 @@ export function registerTools(server: McpServer) {
 				'  "list local Claude Code conversations"',
 			].join("\n"),
 		},
-		async () => {
+		safeToolHandler(async () => {
 			const sessions = scanLocalSessions();
 
 			if (sessions.length === 0) {
@@ -268,7 +292,7 @@ export function registerTools(server: McpServer) {
 			}
 
 			return { content: [{ type: "text" as const, text: lines.join("\n") }] };
-		},
+		}),
 	);
 
 	server.registerTool(
@@ -286,12 +310,12 @@ export function registerTools(server: McpServer) {
 				sessionId: z.string().describe("Full session ID to delete"),
 			}),
 		},
-		async (args) => {
+		safeToolHandler(async (args) => {
 			const config = readConfig();
 			const client = new CodeTeleportClient({ apiUrl: config.apiUrl, token: config.token });
 
-			await client.deleteSession(args.sessionId);
+			await client.deleteSession(args.sessionId as string);
 			return { content: [{ type: "text" as const, text: `Session ${args.sessionId} deleted.` }] };
-		},
+		}),
 	);
 }

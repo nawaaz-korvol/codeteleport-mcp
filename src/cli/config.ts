@@ -8,7 +8,11 @@ export function readConfig(configDir: string = CONFIG_DIR): Config {
 	if (!fs.existsSync(configFile)) {
 		throw new Error("Not logged in. Run `codeteleport auth login` first.");
 	}
-	return JSON.parse(fs.readFileSync(configFile, "utf-8"));
+	try {
+		return JSON.parse(fs.readFileSync(configFile, "utf-8"));
+	} catch {
+		throw new Error("Config file is corrupted. Run `codeteleport auth login` to re-authenticate.");
+	}
 }
 
 export function writeConfig(config: Config, configDir: string = CONFIG_DIR): void {

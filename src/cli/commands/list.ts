@@ -28,12 +28,17 @@ export const listCommand = new Command("list")
 	.option("--tag <tag>", "Filter by tag (cloud only)")
 	.option("--limit <n>", "Max results (cloud only)", "20")
 	.action(async (opts) => {
-		const mode = await resolveListMode(opts, prompt);
+		try {
+			const mode = await resolveListMode(opts, prompt);
 
-		if (mode === "local") {
-			await listLocal(opts);
-		} else {
-			await listCloud(opts);
+			if (mode === "local") {
+				await listLocal(opts);
+			} else {
+				await listCloud(opts);
+			}
+		} catch (err) {
+			console.error(`List failed: ${(err as Error).message}`);
+			process.exit(1);
 		}
 	});
 

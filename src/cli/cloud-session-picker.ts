@@ -14,16 +14,54 @@ export interface PickedCloudSession {
  * - "q" to cancel
  */
 export async function pickCloudSession(
-	_sessions: SessionListItem[],
-	_promptFn: (question: string) => Promise<string>,
-	_logFn?: (...args: unknown[]) => void,
+	sessions: SessionListItem[],
+	promptFn: (question: string) => Promise<string>,
+	logFn: (...args: unknown[]) => void = console.log,
 ): Promise<PickedCloudSession | null> {
-	throw new Error("Not implemented");
+	if (sessions.length === 0) return null;
+
+	if (sessions.length === 1) {
+		const s = sessions[0];
+		return { sessionId: s.id, sourceCwd: s.sourceCwd, sourceMachine: s.sourceMachine };
+	}
+
+	logFn("\nCloud sessions:\n");
+	for (let i = 0; i < sessions.length; i++) {
+		logFn(formatCloudSessionRow(i + 1, sessions[i]));
+	}
+	logFn("");
+
+	const choice = await promptFn("Select session [1]: ");
+
+	if (choice.toLowerCase() === "q") return null;
+
+	const index = choice === "" ? 0 : Number.parseInt(choice, 10) - 1;
+
+	if (Number.isNaN(index) || index < 0 || index >= sessions.length) {
+		const s = sessions[0];
+		return { sessionId: s.id, sourceCwd: s.sourceCwd, sourceMachine: s.sourceMachine };
+	}
+
+	const s = sessions[index];
+	return { sessionId: s.id, sourceCwd: s.sourceCwd, sourceMachine: s.sourceMachine };
+}
+
+function formatSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 /**
  * Format a cloud session for display in the picker list.
  */
-export function formatCloudSessionRow(_index: number, _session: SessionListItem): string {
-	throw new Error("Not implemented");
+export function formatCloudSessionRow(index: number, session: SessionListItem): string {
+	const id = session.id.slice(0, 8);
+	const project = session.metadata?.projectName || session.sourceCwd.split("/").pop() || "unknown";
+	const machine = session.sourceMachine || "unknown";
+	const msgs = session.metadata?.messageCount ? `${String(session.metadata.messageCount).padStart(6)} msgs` : "";
+	const size = formatSize(session.sizeBytes).padStart(8);
+	const label = session.label ? `  [${session.label}]` : "";
+
+	return `  ${index})  ${id}  ${project}  ${machine}  ${msgs}  ${size}${label}`;
 }

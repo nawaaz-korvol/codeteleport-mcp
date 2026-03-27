@@ -14,12 +14,18 @@ export const statusCommand = new Command("status")
 		const client = new CodeTeleportClient({ apiUrl: config.apiUrl, token: config.token });
 
 		try {
-			const { sessions, total } = await client.listSessions({ limit: 1 });
+			const usage = await client.getUsage();
+			const { sessions } = await client.listSessions({ limit: 1 });
+
+			const formatLimit = (used: number, limit: number | null) =>
+				limit === null ? `${used} (unlimited)` : `${used} / ${limit}`;
 
 			console.log("CodeTeleport Status");
 			console.log(`  device   : ${config.deviceName}`);
 			console.log(`  api      : ${config.apiUrl}`);
-			console.log(`  sessions : ${total} stored`);
+			console.log(`  plan     : ${usage.plan}`);
+			console.log(`  sessions : ${formatLimit(usage.sessions.used, usage.sessions.limit)}`);
+			console.log(`  devices  : ${formatLimit(usage.devices.used, usage.devices.limit)}`);
 
 			if (sessions.length > 0) {
 				const last = sessions[0];

@@ -88,6 +88,22 @@ export class CodeTeleportClient {
 		return res.json() as Promise<{ token: string; user: { id: string; email: string } }>;
 	}
 
+	async getUsage(): Promise<{
+		plan: string;
+		paymentStatus: string | null;
+		sessions: { used: number; limit: number | null };
+		devices: { used: number; limit: number | null };
+		versionsPerSession: number;
+	}> {
+		return this.request("GET", "/billing/usage") as Promise<{
+			plan: string;
+			paymentStatus: string | null;
+			sessions: { used: number; limit: number | null };
+			devices: { used: number; limit: number | null };
+			versionsPerSession: number;
+		}>;
+	}
+
 	async createApiToken(name: string, expiresIn = "never"): Promise<{ token: string; id: string }> {
 		return this.request("POST", "/auth/token", { name, expiresIn }) as Promise<{ token: string; id: string }>;
 	}

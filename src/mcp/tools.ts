@@ -239,13 +239,19 @@ export function registerTools(server: McpServer) {
 			const config = readConfig();
 			const client = new CodeTeleportClient({ apiUrl: config.apiUrl, token: config.token });
 
-			const { sessions, total } = await client.listSessions({ limit: 1 });
+			const usage = await client.getUsage();
+			const { sessions } = await client.listSessions({ limit: 1 });
+
+			const formatLimit = (used: number, limit: number | null) =>
+				limit === null ? `${used} (unlimited)` : `${used} / ${limit}`;
 
 			const lines = [
 				"CodeTeleport Status",
 				`  device   : ${config.deviceName}`,
 				`  api      : ${config.apiUrl}`,
-				`  sessions : ${total} stored`,
+				`  plan     : ${usage.plan}`,
+				`  sessions : ${formatLimit(usage.sessions.used, usage.sessions.limit)}`,
+				`  devices  : ${formatLimit(usage.devices.used, usage.devices.limit)}`,
 			];
 
 			if (sessions.length > 0) {

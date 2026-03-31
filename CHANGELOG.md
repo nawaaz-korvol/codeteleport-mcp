@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.7 (2026-03-31)
+
+- **Updated pricing** — quarterly ($5) and annual ($15) plans, no lifetime
+- **Billing page** — dynamic pricing cards from API, clean Pro user experience
+
 ## 0.1.6 (2026-03-27)
 
 - **Graceful error handling** — MCP tools return `isError: true` instead of crashing, CLI shows clean messages

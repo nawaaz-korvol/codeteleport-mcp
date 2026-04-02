@@ -68,6 +68,7 @@ export class CodeTeleportClient {
 			headers: {
 				Authorization: `Bearer ${this.token}`,
 				"Content-Type": "application/json",
+				"X-Client-Version": require("../../package.json").version,
 			},
 			body: body ? JSON.stringify(body) : undefined,
 		});

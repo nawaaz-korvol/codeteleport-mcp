@@ -32,6 +32,19 @@ describe("CodeTeleportClient", () => {
 		});
 	});
 
+	describe("X-Client-Version header", () => {
+		it("sends version header on authenticated requests", async () => {
+			mockFetch.mockResolvedValueOnce(mockResponse(200, { sessions: [], total: 0 }));
+
+			const client = new CodeTeleportClient({ apiUrl, token });
+			await client.listSessions();
+
+			const calledHeaders = mockFetch.mock.calls[0][1].headers;
+			expect(calledHeaders["X-Client-Version"]).toBeDefined();
+			expect(calledHeaders["X-Client-Version"]).toMatch(/^\d+\.\d+\.\d+$/);
+		});
+	});
+
 	describe("register", () => {
 		it("calls POST /auth/register with email and password", async () => {
 			mockFetch.mockResolvedValueOnce(mockResponse(201, { token: "jwt-token", user: { id: "u1", email: "a@b.com" } }));

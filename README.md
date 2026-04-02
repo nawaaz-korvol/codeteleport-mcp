@@ -228,7 +228,7 @@ The CLI and MCP server are open source under the MIT license. Cloud sync has a f
 | **Website** | [codeteleport.com](https://codeteleport.com) |
 | **npm** | [codeteleport](https://www.npmjs.com/package/codeteleport) |
 | **GitHub** | [nawaaz-korvol/codeteleport-cli-mcp](https://github.com/nawaaz-korvol/codeteleport-cli-mcp) |
-| **Support** | [support@codeteleport.com](mailto:support@codeteleport.com) · [GitHub Issues](https://github.com/nawaaz-korvol/codeteleport-cli-mcp/issues) |
+| **Support** | [support.codeteleport.com](https://support.codeteleport.com) · [GitHub Issues](https://github.com/nawaaz-korvol/codeteleport-cli-mcp/issues) |
 | **Discord** | [discord.gg/c69JYPWS](https://discord.gg/c69JYPWS) |
 
 ---

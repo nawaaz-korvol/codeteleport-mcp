@@ -35,6 +35,7 @@ export async function startOAuthCallbackServer(): Promise<{
 	return new Promise((resolveSetup) => {
 		let resolveToken: (token: string) => void;
 		let rejectToken: (err: Error) => void;
+		let closed = false;
 
 		const tokenPromise = new Promise<string>((res, rej) => {
 			resolveToken = res;
@@ -42,6 +43,12 @@ export async function startOAuthCallbackServer(): Promise<{
 		});
 		// Prevent unhandled rejection — caller is expected to await this
 		tokenPromise.catch(() => {});
+
+		function safeClose() {
+			if (closed) return;
+			closed = true;
+			server.close();
+		}
 
 		const server = http.createServer((req, res) => {
 			const url = new URL(req.url || "/", "http://localhost");
@@ -55,7 +62,7 @@ export async function startOAuthCallbackServer(): Promise<{
 				if (error) {
 					res.end("<html><body><h2>Authentication failed</h2><p>You can close this tab.</p></body></html>", () => {
 						setTimeout(() => {
-							server.close();
+							safeClose();
 							rejectToken(new Error(error));
 						}, 500);
 					});
@@ -67,7 +74,7 @@ export async function startOAuthCallbackServer(): Promise<{
 						"<html><body><h2>Logged in to CodeTeleport!</h2><p>You can close this tab and return to the terminal.</p></body></html>",
 						() => {
 							setTimeout(() => {
-								server.close();
+								safeClose();
 								resolveToken(token);
 							}, 500);
 						},
@@ -87,7 +94,7 @@ export async function startOAuthCallbackServer(): Promise<{
 			resolveSetup({
 				port,
 				tokenPromise,
-				close: () => server.close(),
+				close: safeClose,
 			});
 		});
 	});

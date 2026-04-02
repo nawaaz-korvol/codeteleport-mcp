@@ -187,6 +187,7 @@ The CLI and MCP server are fully open source under the MIT license. The cloud sy
 | **Website** | [codeteleport.com](https://codeteleport.com) |
 | **npm** | [codeteleport](https://www.npmjs.com/package/codeteleport) |
 | **GitHub** | [nawaaz-korvol/codeteleport-cli-mcp](https://github.com/nawaaz-korvol/codeteleport-cli-mcp) |
+| **Support** | [support@codeteleport.com](mailto:support@codeteleport.com) · [GitHub Issues](https://github.com/nawaaz-korvol/codeteleport-cli-mcp/issues) |
 
 ---
 
